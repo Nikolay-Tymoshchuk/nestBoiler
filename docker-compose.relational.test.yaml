@@ -1,0 +1,60 @@
+# File for testing relational databases
+# Файл для тестирования реляционных баз данных
+
+services:
+  # Определение сервисов для Docker Compose
+
+  postgres:
+    # Сервис для базы данных PostgreSQL
+    image: postgres:16.4-alpine
+    # Используем официальный образ PostgreSQL версии 16.4 на базе Alpine Linux
+    expose:
+      - 5432
+    # Открываем порт 5432 для других контейнеров в сети Docker
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    # Устанавливаем переменные окружения для PostgreSQL:
+    # - POSTGRES_USER: имя пользователя базы данных, берется из переменной окружения DATABASE_USERNAME
+    # - POSTGRES_PASSWORD: пароль пользователя базы данных, берется из переменной окружения DATABASE_PASSWORD
+    # - POSTGRES_DB: имя базы данных, берется из переменной окружения DATABASE_NAME
+
+  maildev:
+    # Сервис для MailDev (инструмент для тестирования email)
+    build:
+      context: .
+      dockerfile: maildev.Dockerfile
+    # Строим образ из Dockerfile с именем maildev.Dockerfile в текущем контексте
+    expose:
+      - 1080
+      - 1025
+    # Открываем порты для MailDev:
+    # - 1080: порт для веб-интерфейса MailDev
+    # - 1025: порт для SMTP сервера MailDev
+
+  # Uncomment to use redis
+  # Раскомментируйте, чтобы использовать Redis
+  # redis:
+  #   image: redis:7-alpine
+  #   expose:
+  #     - 6379
+  # Сервис для Redis (раскомментируйте, чтобы использовать Redis):
+  # - Используем официальный образ Redis версии 7 на базе Alpine Linux
+  # - Открываем порт 6379 для других контейнеров в сети Docker
+
+  api:
+    # Сервис для API приложения
+    build:
+      context: .
+      dockerfile: relational.test.Dockerfile
+    # Строим образ из Dockerfile с именем relational.test.Dockerfile в текущем контексте
+    env_file:
+      - env-example-relational
+    # Используем файл окружения env-example-relational
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./test:/usr/src/app/test
+    # Монтируем локальные директории в контейнер:
+    # - ./src монтируется в /usr/src/app/src
+    # - ./test монтируется в /usr/src/app/test

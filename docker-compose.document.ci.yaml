@@ -1,0 +1,57 @@
+services:
+  # Определение сервисов для Docker Compose
+
+  mongo:
+    # Сервис для базы данных MongoDB
+    image: mongo:7.0.14
+    # Используем официальный образ MongoDB версии 7.0.14
+    restart: always
+    # Перезапускать контейнер всегда при сбое
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    # Устанавливаем переменные окружения для MongoDB:
+    # - MONGO_INITDB_ROOT_USERNAME: имя пользователя базы данных, берется из переменной окружения DATABASE_USERNAME
+    # - MONGO_INITDB_ROOT_PASSWORD: пароль пользователя базы данных, берется из переменной окружения DATABASE_PASSWORD
+    expose:
+      - 27017
+    # Открываем порт 27017 для других контейнеров в сети Docker
+
+  maildev:
+    # Сервис для MailDev (инструмент для тестирования email)
+    build:
+      context: .
+      dockerfile: maildev.Dockerfile
+    # Строим образ из Dockerfile с именем maildev.Dockerfile в текущем контексте
+    expose:
+      - 1080
+      - 1025
+    # Открываем порты для MailDev:
+    # - 1080: порт для веб-интерфейса MailDev
+    # - 1025: порт для SMTP сервера MailDev
+
+  # Uncomment to use redis
+  # Раскомментируйте, чтобы использовать Redis
+  # redis:
+  #   image: redis:7-alpine
+  #   expose:
+  #     - 6379
+  # Сервис для Redis (раскомментируйте, чтобы использовать Redis):
+  # - Используем официальный образ Redis версии 7 на базе Alpine Linux
+  # - Открываем порт 6379 для других контейнеров в сети Docker
+
+  api:
+    # Сервис для API приложения
+    build:
+      context: .
+      dockerfile: document.test.Dockerfile
+    # Строим образ из Dockerfile с именем document.test.Dockerfile в текущем контексте
+    env_file:
+      - env-example-document
+    # Используем файл окружения env-example-document
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./test:/usr/src/app/test
+    # Монтируем локальные директории в контейнер:
+    # - ./src монтируется в /usr/src/app/src
+    # - ./test монтируется в /usr/src/app/test

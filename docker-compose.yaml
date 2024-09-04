@@ -1,0 +1,57 @@
+services:
+  # Сервис для базы данных PostgreSQL
+  postgres:
+    # Используем официальный образ PostgreSQL версии 16.4 на базе Alpine Linux
+    image: postgres:16.4-alpine
+    # Пробрасываем порт из переменной окружения DATABASE_PORT на порт 5432 контейнера
+    ports:
+      - ${DATABASE_PORT}:5432
+    # Определяем том для хранения данных PostgreSQL
+    volumes:
+      - boilerplate-db:/var/lib/postgresql/data
+    # Устанавливаем переменные окружения для PostgreSQL
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+
+  # Сервис для MailDev (инструмент для тестирования email)
+  maildev:
+    # Строим образ из Dockerfile с именем maildev.Dockerfile
+    build:
+      context: .
+      dockerfile: maildev.Dockerfile
+    # Пробрасываем порты для MailDev
+    ports:
+      - ${MAIL_CLIENT_PORT}:1080 # Порт для веб-интерфейса MailDev
+      - ${MAIL_PORT}:1025 # Порт для SMTP сервера MailDev
+
+  # Сервис для Adminer (интерфейс для управления базами данных)
+  adminer:
+    # Используем официальный образ Adminer
+    image: adminer
+    # Перезапускать контейнер всегда при сбое
+    restart: always
+    # Пробрасываем порт 8080 контейнера на порт 8080 хоста
+    ports:
+      - 8080:8080
+
+  # Сервис для Redis (раскомментируйте, чтобы использовать Redis)
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - 6379:6379
+
+  # Сервис для API приложения
+  api:
+    # Строим образ из Dockerfile с именем Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Пробрасываем порт из переменной окружения APP_PORT на тот же порт контейнера
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+
+# Определяем том для хранения данных PostgreSQL
+volumes:
+  boilerplate-db:
