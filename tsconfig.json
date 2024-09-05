@@ -42,6 +42,9 @@
     "renovate.js",
     ".hygen.js",
     "eslint.config.mjs",
-    "commitlint.config.js"
+    "commitlint.config.js",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "test/**/*.ts"
   ]
 }
